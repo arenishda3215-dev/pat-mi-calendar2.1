@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>パット見カレンダー</title>
+<style>
+:root{--bg:#f4f5f2;--sf:#fff;--tx:#20242b;--mt:#6a7280;--ln:#dfe2dc;--ac:#2f6f5e;--ok:#16a34a;--m:#f97316;--h:#facc15;--n:#3b82f6;--d:#9ca3af;--sun:#dc2626;--sat:#2563eb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171a;--sf:#1e2226;--tx:#eceff1;--mt:#9aa3ad;--ln:#2d3338;--ac:#6fc0a8;--ok:#4ade80;--sun:#f87171;--sat:#60a5fa}}
+:root[data-theme="dark"]{--bg:#14171a;--sf:#1e2226;--tx:#eceff1;--mt:#9aa3ad;--ln:#2d3338;--ac:#6fc0a8;--ok:#4ade80;--sun:#f87171;--sat:#60a5fa}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.5 -apple-system,"Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;padding-bottom:150px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--sf);z-index:10}
+#app{max-width:520px;margin:0 auto}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--sf);border-bottom:1px solid var(--ln);padding:10px 14px 0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ttl{font-size:17px;font-weight:700;background:none;border:0;color:var(--tx);padding:0;text-align:left;font-family:inherit}
+.sub{font-size:12px;color:var(--mt)}
+.lg{display:flex;gap:8px;font-size:11px;color:var(--mt);align-items:center}
+.lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:3px;vertical-align:-1px}
+.tabs{display:flex;margin-top:8px}
+.tabs button{flex:1;padding:9px 0;border:0;background:none;font:inherit;font-weight:600;color:var(--mt);border-bottom:3px solid transparent}
+.tabs button.on{color:var(--ac);border-color:var(--ac)}
+.who{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--ln);background:var(--sf);color:var(--tx);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px}
+.chip.on{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+.chip .ck{color:var(--ok);font-weight:700}.chip.on .ck{color:inherit}
+.sec{padding:0 14px 8px}
+.sum{font-size:13px;color:var(--mt);margin:4px 0 8px}
+.flt{display:flex;gap:6px;margin:6px 0}
+.flt button{border:1px solid var(--ln);background:var(--sf);color:var(--tx);border-radius:8px;padding:4px 12px;font:inherit;font-size:13px}
+.flt button.on{border-color:var(--ac);color:var(--ac);font-weight:700}
+.cd{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--ln);background:var(--sf);color:var(--tx);border-radius:10px;padding:9px 12px;margin-bottom:6px;font:inherit;text-align:left}
+.cd b{font-size:14px}.cd span{font-size:13px;color:var(--mt)}.cd.full span{color:var(--ok);font-weight:700}
+.mt{font-weight:700;margin:14px 0 6px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dw{text-align:center;font-size:11px;color:var(--mt)}
+.cell{border-radius:8px;background:var(--sf);border:1px solid var(--ln);min-height:64px;display:flex;flex-direction:column;padding:2px;gap:2px;cursor:pointer;touch-action:manipulation;user-select:none}
+.cell.all{outline:2px solid var(--ok);outline-offset:-1px}
+.dn{font-size:11px;text-align:center;font-weight:700;line-height:14px}
+.dn.s0{color:var(--sun)}.dn.s6{color:var(--sat)}
+.b{flex:1;min-height:12px;border-radius:4px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#20242b}
+.cell.free .b{background:color-mix(in srgb,var(--ok) 14%,var(--bg))}
+.tb{position:fixed;left:0;right:0;bottom:0;background:var(--sf);border-top:1px solid var(--ln);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));z-index:9}
+.tbi{max-width:520px;margin:0 auto}
+.br{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.br button{border:2px solid var(--ln);background:var(--sf);color:var(--tx);border-radius:12px;padding:10px 0;font:inherit;font-weight:700;font-size:15px}
+.br button i{display:block;height:6px;border-radius:3px;margin:0 14px 4px}
+.br button.on{border-color:var(--tx)}
+.dn2{width:100%;margin-top:8px;padding:10px;border-radius:12px;border:0;font:inherit;font-weight:700;background:var(--ac);color:var(--bg)}
+.dn2.off{background:var(--bg);color:var(--mt);border:1px solid var(--ln)}
+.hint{font-size:12px;color:var(--mt);text-align:center;margin-top:6px}
+.sh{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:30}
+.sh.on{display:flex}
+.sp{background:var(--sf);width:100%;max-width:520px;border-radius:16px 16px 0 0;max-height:88%;overflow:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.sp h3{margin:0 0 10px;font-size:17px}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.sp input[type=text],.sp input[type=month]{flex:1;min-width:0;padding:9px 10px;border:1px solid var(--ln);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+.sp .bt{border:1px solid var(--ln);background:var(--sf);color:var(--tx);border-radius:8px;padding:8px 12px;font:inherit}
+.sp .bt.pr{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+.sp .bt:disabled{opacity:.4}
+.seg{display:flex;gap:8px;margin-bottom:10px}.seg .bt{flex:1}.seg .bt.on{border-color:var(--ac);color:var(--ac);font-weight:700}
+.lab{font-size:12px;color:var(--mt);margin:12px 0 4px}
+.sl{margin-bottom:10px}.sl h4{margin:0 0 4px;font-size:14px;display:flex;align-items:center;gap:6px}.sl h4 i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.sl p{margin:2px 0;font-size:13px}.sl em{font-style:normal;color:var(--mt);font-size:12px}
+#toast{position:fixed;left:50%;bottom:170px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 14px;border-radius:10px;font-size:13px;z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+.wz{max-width:520px;margin:0 auto;padding:28px 18px}
+.wz h1{font-size:22px;margin:0 0 6px}.wz p{color:var(--mt);margin:0 0 18px;font-size:14px}
+.wz label{display:block;font-size:13px;color:var(--mt);margin:14px 0 4px}
+.wz input{width:100%;padding:12px;border:1px solid var(--ln);border-radius:10px;background:var(--sf);color:var(--tx);font:inherit}
+.big{display:block;width:100%;padding:18px;margin-bottom:10px;border-radius:14px;border:2px solid var(--ln);background:var(--sf);color:var(--tx);font:inherit;font-size:17px;font-weight:700;text-align:left}
+.big small{display:block;font-weight:400;color:var(--mt);font-size:12px}
+.mg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mg button{padding:16px 0;border-radius:12px;border:2px solid var(--ln);background:var(--sf);color:var(--tx);font:inherit;font-weight:700}
+.yr{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0 14px;font-size:18px;font-weight:700}
+.yr button{border:1px solid var(--ln);background:var(--sf);color:var(--tx);border-radius:8px;padding:6px 14px;font:inherit}
+.bk{background:none;border:0;color:var(--mt);font:inherit;padding:8px 0;margin-bottom:6px}
+.go{width:100%;margin-top:18px;padding:14px;border-radius:12px;border:0;background:var(--ac);color:var(--bg);font:inherit;font-weight:700;font-size:16px}
+button:focus-visible,input:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+</style></head>
+<body>
+<div id="app"></div>
+<div class="sh" id="sh"><div class="sp" id="sp"></div></div>
+<div id="toast"></div>
+<script>
+const SL=['m','h','n'],NM={m:'朝',h:'昼',n:'夜',d:'1日'},RGB={m:[249,115,22],h:[250,204,21],n:[59,130,246],d:[156,163,175]},WD='日月火水木金土',KEY='patmi-v1';
+let S,W=null,mode='cal';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ymd=(y,m,d)=>y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+const fmt=dt=>{const[y,m,d]=dt.split('-').map(Number);return m+'月'+d+'日('+WD[new Date(y,m-1,d).getDay()]+')'};
+const dim=(y,m)=>new Date(y,m,0).getDate();
+function months(){const[y,m]=S.start.split('-').map(Number);return Array.from({length:S.months},(_,i)=>{const d=new Date(y,m-1+i,1);return{y:d.getFullYear(),m:d.getMonth()+1}})}
+function busy(id,dt,s){const e=(S.data[id]||{})[dt];return !!(e&&(e.d||e[s]))}
+function seed(){const ms=[['あなた',0],['たろう',1],['はなこ',1],['けん',1],['みさき',0]].map((a,i)=>({id:'m'+i,name:a[0],done:!!a[1]}));
+ let r=7;const rnd=()=>(r=(r*16807)%2147483647)/2147483647;const data={};
+ ms.forEach((x,i)=>{data[x.id]={};if(i===0||i===4)return;months().forEach(mo=>{for(let d=1;d<=dim(mo.y,mo.m);d++){if(rnd()<.4){const e={},k=rnd();if(k<.3)e.d=true;else if(k<.6)e[SL[Math.floor(rnd()*3)]]=true;else{const a=Math.floor(rnd()*3);e[SL[a]]=true;e[SL[(a+1)%3]]=true}data[x.id][ymd(mo.y,mo.m,d)]=e}}})});
+ S.members=ms;S.data=data;S.me=ms[0].id}
+function init(){const n=new Date();S={name:'旅行の日程調整',months:2,start:n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0'),members:[],data:{},me:'',tab:'in',brush:'d',flt:'all',created:false};
+ try{const j=localStorage.getItem(KEY);if(j){S=JSON.parse(j);return}}catch(e){}
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1800)}
+function apply(dt){const D=S.data[S.me]=S.data[S.me]||{};let e=D[dt]||{};const b=S.brush;
+ if(b==='d'){e=(e.d||(e.m&&e.h&&e.n))?{}:{d:true}}
+ else{if(e.d)e={m:true,h:true,n:true};e={...e,[b]:!e[b]};if(e.m&&e.h&&e.n)e={d:true}}
+ if(!e.d&&!e.m&&!e.h&&!e.n)delete D[dt];else D[dt]=e;save();render()}
+function cands(){const req=S.flt==='all'?SL:[S.flt],out=[];
+ months().forEach(mo=>{for(let d=1;d<=dim(mo.y,mo.m);d++){const dt=ymd(mo.y,mo.m,d);let f=0,u=0;S.members.forEach(x=>{if(!req.some(s=>busy(x.id,dt,s)))x.done?f++:u++});out.push({dt,f,u})}});
+ return out.filter(o=>o.f>0).sort((a,b)=>b.f-a.f||a.u-b.u||(a.dt<b.dt?-1:1)).slice(0,4)}
+function cell(dt,dow,N,grp){let h='',cls='cell';
+ if(!grp){const e=(S.data[S.me]||{})[dt]||{};
+  SL.forEach((s,i)=>{const on=e.d||e[s],k=e.d?'d':s;h+='<div class="b"'+(on?' style="background:var(--'+k+')"':'')+'>'+(e.d&&i===1?'1日':'')+'</div>'});}
+ else{let any=false;SL.forEach(s=>{const c=S.members.filter(x=>busy(x.id,dt,s)).length;if(c)any=true;
+   h+='<div class="b"'+(c?' style="background:rgba('+RGB[s]+','+(.25+.75*c/N).toFixed(2)+')"':'')+'>'+(c||'')+'</div>'});
+  const un=S.members.filter(x=>!x.done).length;
+  if(!S.members.some(x=>SL.some(s=>busy(x.id,dt,s)))){if(!un)cls+=' all free';}}
+ return '<div class="'+cls+'" data-a="cell" data-d="'+dt+'"><div class="dn s'+dow+'">'+dt.slice(8).replace(/^0/,'')+'</div>'+h+'</div>'}
+function render(){if(S.created===false&&!W)W={step:1,name:'',nick:'',months:2,year:new Date().getFullYear()};if(W)return wiz();const N=S.members.length,grp=S.tab==='all';
+ if(!S.members.find(x=>x.id===S.me))S.me=(S.members[0]||{}).id;
+ const me=S.members.find(x=>x.id===S.me)||{};
+ let h='<header><div class="top"><div><button class="ttl" data-a="set">'+esc(S.name)+' ⚙</button><div class="sub">'+N+'人・'+S.months+'か月</div></div>'
+ +'<div class="lg">'+['m','h','n','d'].map(k=>'<span><i style="background:var(--'+k+')"></i>'+NM[k]+'</span>').join('')+'</div></div>'
+ +'<div class="tabs"><button data-a="tab" data-v="in" class="'+(grp?'':'on')+'">予定を入れる</button><button data-a="tab" data-v="all" class="'+(grp?'on':'')+'">みんなの空き</button></div></header>';
+ h+='<div class="who">'+S.members.map(x=>'<button class="chip'+(x.id===S.me&&!grp?' on':'')+'" data-a="me" data-v="'+x.id+'">'+esc(x.name)+(x.done?' <span class="ck">✓</span>':'')+'</button>').join('')+'</div>';
+ if(N<2)h+='<div class="sec sum">参加者は2人以上必要です。⚙から追加してください。</div>';
+ if(grp){const done=S.members.filter(x=>x.done).length;
+  h+='<div class="sec"><div class="sum">回答済み '+done+'人 / 未回答 '+(N-done)+'人（数字は予定ありの人数）</div>'
+  +'<div class="flt">'+[['all','終日'],['m','朝'],['h','昼'],['n','夜']].map(a=>'<button data-a="flt" data-v="'+a[0]+'" class="'+(S.flt===a[0]?'on':'')+'">'+a[1]+'</button>').join('')+'</div>';
+  const cs=cands();
+  h+=cs.length?cs.map(o=>'<button class="cd'+(o.f===N?' full':'')+'" data-a="cell" data-d="'+o.dt+'"><b>'+fmt(o.dt)+'</b><span>'+(o.f===N?'全員OK':o.f+'人OK'+(o.u?'・未回答'+o.u+'人':''))+'</span></button>').join(''):'<div class="sum">まだ空きが確認できた日はありません。</div>';
+  h+='</div>'}
+ h+='<div class="sec">';
+ months().forEach(mo=>{h+='<div class="mt">'+mo.y+'年'+mo.m+'月</div><div class="cal">'+[...WD].map(w=>'<div class="dw">'+w+'</div>').join('');
+  const f=new Date(mo.y,mo.m-1,1).getDay();for(let i=0;i<f;i++)h+='<div></div>';
+  for(let d=1;d<=dim(mo.y,mo.m);d++)h+=cell(ymd(mo.y,mo.m,d),(f+d-1)%7,N,grp);h+='</div>'});
+ h+='</div>';
+ if(!grp)h+='<div class="tb"><div class="tbi"><div class="br">'+['m','h','n','d'].map(k=>'<button data-a="brush" data-v="'+k+'" class="'+(S.brush===k?'on':'')+'"><i style="background:var(--'+k+')"></i>'+NM[k]+'</button>').join('')+'</div>'
+  +'<button class="dn2'+(me.done?' off':'')+'" data-a="done">'+(me.done?'回答完了を取り消す':'入力が終わったら「回答完了」')+'</button>'
+  +'<div class="hint">'+esc(me.name||'')+'さんの「空いていない時間」を選んで日付をタップ。もう一度で解除</div></div></div>';
+ document.getElementById('app').innerHTML=h}
+function periodLabel(){return months().map(x=>x.y+'年'+x.m+'月').join('〜')}
+function wiz(){let h='<div class="wz">';
+ if(W.step===1){h+='<h1>新しいプロジェクト</h1><p>日程を決めたい予定の名前と、あなたのニックネームを入力してください。</p><label>プロジェクト名</label><input type="text" data-w="name" value="'+esc(W.name)+'" placeholder="例：冬の旅行"><label>あなたのニックネーム</label><input type="text" data-w="nick" value="'+esc(W.nick)+'" placeholder="例：たろう"><button class="go" data-a="w1">次へ</button>'}
+ else if(W.step===2){h+='<button class="bk" data-a="wb">‹ 戻る</button><h1>表示する期間</h1><p>カレンダーに表示する長さを選んでください。</p><button class="big" data-a="wm" data-v="1">1か月<small>近い日程を決めるとき</small></button><button class="big" data-a="wm" data-v="2">2か月<small>少し先まで見たいとき</small></button>'}
+ else{h+='<button class="bk" data-a="wb">‹ 戻る</button><h1>開始する月</h1><p>'+(W.months===1?'表示する月':'最初の月')+'を選んでください。</p><div class="yr"><button data-a="wy" data-v="-1">‹</button>'+W.year+'年<button data-a="wy" data-v="1">›</button></div><div class="mg">'+Array.from({length:12},(_,i)=>{const m=i+1,n=m===12?1:m+1;return '<button data-a="ws" data-v="'+m+'">'+(W.months===1?m+'月':m+'〜'+n+'月')+'</button>'}).join('')+'</div>'}
+ document.getElementById('app').innerHTML=h+'</div>'}
+function open(h){document.getElementById('sp').innerHTML=h;document.getElementById('sh').classList.add('on')}
+function close(){document.getElementById('sh').classList.remove('on')}
+function detail(dt){let h='<h3>'+fmt(dt)+'</h3>';
+ SL.forEach(s=>{const b=[],f=[],u=[];S.members.forEach(x=>{if(busy(x.id,dt,s))b.push(x.name);else if(x.done)f.push(x.name);else u.push(x.name)});
+  h+='<div class="sl"><h4><i style="background:var(--'+s+')"></i>'+NM[s]+' <em>空き'+f.length+'人</em></h4>'
+  +'<p>予定あり：'+(b.length?esc(b.join('、')):'なし')+'</p><p>空き：'+(f.length?esc(f.join('、')):'なし')+'</p>'+(u.length?'<p>未回答：'+esc(u.join('、'))+'</p>':'')+'</div>'});
+ open(h+'<button class="bt pr" style="width:100%" data-a="close">閉じる</button>')}
+function settings(){const N=S.members.length;
+ open('<h3>プロジェクト設定</h3><div class="lab">プロジェクト名</div><div class="row"><input type="text" value="'+esc(S.name)+'" data-c="name"></div>'
+ +'<div class="lab">表示期間</div><div class="row"><button class="bt" style="flex:1;text-align:left" data-a="period">'+periodLabel()+'（変更）</button></div>'
+ +'<div class="lab">メンバー（2〜10人）</div>'+S.members.map(x=>'<div class="row"><input type="text" value="'+esc(x.name)+'" data-c="rn" data-v="'+x.id+'"><button class="bt" data-a="del" data-v="'+x.id+'"'+(N<=2?' disabled':'')+'>削除</button></div>').join('')
+ +'<div class="row"><input type="text" id="nn" placeholder="ニックネーム"><button class="bt pr" data-a="add"'+(N>=10?' disabled':'')+'>追加</button></div>'
+ +'<div class="lab">データ</div><div class="row"><button class="bt" data-a="demo">デモデータに入れ替え</button><button class="bt" data-a="clear">予定を全消去</button></div><div class="row"><button class="bt" data-a="newp">新しいプロジェクトを作る</button></div>'
+ +'<button class="bt pr" style="width:100%;margin-top:8px" data-a="close">完了</button>')}
+document.addEventListener('click',e=>{if(e.target.id==='sh')return close();
+ const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,v=t.dataset.v;
+ if(a==='tab'){S.tab=v;save();render()}
+ else if(a==='me'){S.me=v;S.tab='in';save();render()}
+ else if(a==='brush'){S.brush=v;save();render()}
+ else if(a==='flt'){S.flt=v;save();render()}
+ else if(a==='done'){const m=S.members.find(x=>x.id===S.me);m.done=!m.done;save();render();toast(m.done?m.name+'さんの回答を完了にしました':'回答完了を取り消しました')}
+ else if(a==='cell'){if(S.tab==='in')apply(t.dataset.d);else detail(t.dataset.d)}
+ else if(a==='set')settings();
+ else if(a==='close')close();
+ else if(a==='w1'){if(!W.name.trim()||!W.nick.trim())return toast('両方入力してください');W.step=2;render()}
+ else if(a==='wb'){if(W.step===3)W.step=2;else if(W.edit)W=null;else W.step=1;render()}
+ else if(a==='wm'){W.months=+v;W.step=3;render()}
+ else if(a==='wy'){W.year+=+v;render()}
+ else if(a==='ws'){const st=W.year+'-'+String(v).padStart(2,'0');
+  if(W.edit){S.months=W.months;S.start=st}
+  else{const id='m'+Date.now();S.name=W.name.trim();S.months=W.months;S.start=st;S.members=[{id,name:W.nick.trim(),done:false}];S.data={};S.data[id]={};S.me=id;S.created=true;S.tab='in'}
+  W=null;save();render()}
+ else if(a==='period'){close();W={step:2,edit:true,months:S.months,year:+S.start.slice(0,4)};render()}
+ else if(a==='newp'){close();S.created=false;W=null;render()}
+ else if(a==='del'){S.members=S.members.filter(x=>x.id!==v);delete S.data[v];save();render();settings()}
+ else if(a==='add'){const n=document.getElementById('nn').value.trim();
+  if(!n)return toast('ニックネームを入力してください');
+  if(S.members.length>=10)return toast('参加は10人までです');
+  if(S.members.some(x=>x.name===n))return toast('同じ名前は使えません');
+  const id='m'+Date.now();S.members.push({id,name:n,done:false});S.data[id]={};save();render();settings()}
+ else if(a==='demo'){seed();save();render();settings()}
+ else if(a==='clear'){S.data={};S.members.forEach(x=>{S.data[x.id]={};x.done=false});save();render();settings()}});
+document.addEventListener('input',e=>{const k=e.target.dataset.w;if(k&&W)W[k]=e.target.value});
+document.addEventListener('change',e=>{const t=e.target,c=t.dataset.c;if(!c)return;
+ if(c==='name'){S.name=t.value.trim()||'日程調整'}
+ else if(c==='start'){if(!t.value)return;S.start=t.value}
+ else if(c==='rn'){const n=t.value.trim();if(!n||S.members.some(x=>x.name===n&&x.id!==t.dataset.v)){toast('名前が空か重複しています');return settings()}S.members.find(x=>x.id===t.dataset.v).name=n}
+ save();render()});
+init();render();
+</script>
+</body></html>
